@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générer un Token</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result, #error {
+            margin-top: 20px;
+            word-wrap: break-word;
+        }
+        #error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<h1>Générer un Token</h1>
+<div>
+    <input type="email" id="emailInput" placeholder="Entrez votre adresse e-mail" required>
+    <button onclick="handleGenerateToken()">Générer Token</button>
+</div>
+<div id="result"></div>
+<div id="error"></div>
+
+<script>
+    async function handleGenerateToken() {
+        const emailInput = document.getElementById("emailInput").value;
+        const resultDiv = document.getElementById("result");
+        const errorDiv = document.getElementById("error");
+
+        // Réinitialiser les messages
+        resultDiv.textContent = "";
+        errorDiv.textContent = "";
+
+        try {
+            const response = await fetch('/api/token/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: emailInput }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                resultDiv.textContent = `Token généré : ${data.token}`;
+            } else {
+                throw new Error(data.error || 'Erreur lors de la génération du token');
+            }
+        } catch (error) {
+            errorDiv.textContent = `Erreur : ${error.message}`;
+        }
+    }
+</script>
+</body>
+</html>
