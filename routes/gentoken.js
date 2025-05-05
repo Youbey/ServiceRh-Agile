@@ -6,8 +6,8 @@ async function generateToken(email) {
         throw new Error('Invalid email address');
     }
 
-    const timestamp = new Date().toISOString();
-    const data = email + timestamp;
+    const salt = "mySaltIsSecure"
+    const data = email + salt;
 
     // Simuler l'API Web Crypto dans Node.js avec le module crypto
     const crypto = require('crypto');
