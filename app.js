@@ -3,7 +3,6 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
@@ -11,7 +10,8 @@ var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'html'); // Set HTML as view engine
+app.engine('html', require('ejs').renderFile); // Use EJS to render HTML files
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -35,7 +35,9 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  
+  // Send a plain error message instead of trying to render a view
+  res.send(`<h1>Error ${err.status || 500}</h1><p>${err.message}</p>`);
 });
 
 module.exports = app;
