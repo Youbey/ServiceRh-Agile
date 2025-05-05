@@ -4,18 +4,253 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Connexion RH</title>
-  <link rel="stylesheet" href="/stylesheets/style.css">
+  <style>
+    :root {
+      --primary-color: #2A5C7B;
+      --secondary-color: #4A90E2;
+      --accent-color: #00C9B1;
+      --background-light: #F8FAFC;
+      --text-dark: #1E293B;
+      --text-light: #FFFFFF;
+      --border-color: #E2E8F0;
+      --error-color: #EF4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--background-light);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    header {
+      background: var(--primary-color);
+      color: var(--text-light);
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .header-nav a {
+      color: var(--text-light);
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-weight: 500;
+      transition: opacity 0.2s ease;
+    }
+
+    .header-nav a:hover {
+      opacity: 0.9;
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+      flex: 1;
+    }
+
+    .card {
+      background: var(--text-light);
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .card-title {
+      color: var(--primary-color);
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      background: var(--text-light);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table th {
+      background: var(--primary-color);
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    .data-table tr:nth-child(even) {
+      background: var(--background-light);
+    }
+
+    .data-table tr:hover {
+      background: #F1F5F9;
+    }
+
+    .action-link {
+      color: var(--secondary-color);
+      text-decoration: none;
+      margin-right: 1rem;
+      font-weight: 500;
+    }
+
+    .action-link:hover {
+      text-decoration: underline;
+    }
+
+    .action-link.delete {
+      color: var(--error-color);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .login-container {
+      background: var(--text-light);
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      padding: 2rem;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .login-container h1 {
+      color: var(--primary-color);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .login-container form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .login-container label {
+      text-align: left;
+      font-weight: 500;
+      color: var(--text-dark);
+    }
+
+    .login-container input {
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .login-container input:focus {
+      outline: none;
+      border-color: var(--secondary-color);
+    }
+
+    .login-container button {
+      background: var(--primary-color);
+      color: var(--text-light);
+      padding: 0.75rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .login-container button:hover {
+      background: var(--secondary-color);
+    }
+
+    footer {
+      background: var(--primary-color);
+      color: var(--text-light);
+      padding: 1.5rem;
+      text-align: center;
+      margin-top: auto;
+      width: 100%;
+    }
+
+    .footer-link {
+      color: var(--text-light);
+      text-decoration: none;
+      margin: 0 0.5rem;
+    }
+
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .header-nav {
+        margin-top: 1rem;
+      }
+
+      .header-nav a {
+        margin: 0 0.75rem;
+      }
+
+      .data-table {
+        display: block;
+        overflow-x: auto;
+      }
+
+      .login-container {
+        padding: 1.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="login-container">
-    <h1>Connexion RH</h1>
-    <form action="/users/login" method="POST">
-      <label for="email">Email :</label>
-      <input type="email" id="email" name="email" required>
-      <label for="password">Mot de passe :</label>
-      <input type="password" id="password" name="password" required>
-      <button type="submit">Se connecter</button>
-    </form>
-  </div>
+<div class="login-container">
+  <h1>Connexion RH</h1>
+  <form action="/users/login" method="POST">
+    <label for="email">Email :</label>
+    <input type="email" id="email" name="email" required>
+    <label for="password">Mot de passe :</label>
+    <input type="password" id="password" name="password" required>
+    <button type="submit">Se connecter</button>
+  </form>
+</div>
 </body>
 </html>

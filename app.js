@@ -46,6 +46,10 @@ app.get('/gentoken', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'genToken.html'));
 });
 
+app.get('/quizz', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'quizz.html'));
+});
+
 
 // Gestion des erreurs 404
 app.use((req, res, next) => {

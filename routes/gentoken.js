@@ -60,7 +60,7 @@ router.post('/generate', async (req, res) => {
     try {
         const token = await generateToken(email);
         await addToken(token, email);
-        const lien = "http://localhost:3000/quiz?token=" + token;
+        const lien = "http://localhost:3000/quizz?token=" + token;
         res.status(200).json({ token, lien });
     } catch (error) {
         res.status(400).json({ error: error.message });

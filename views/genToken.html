@@ -166,9 +166,6 @@
             const data = await response.json();
 
             if (response.ok) {
-                // Concaténer les deux informations dans resultDiv
-                //resultDiv.textContent = `Token généré : ${data.token}\n\tLien direct : ${data.lien}`;
-                // Alternative : utiliser innerHTML pour un meilleur formatage
                 resultDiv.innerHTML = `Token généré : ${data.token}<br>Lien direct : <a href="${data.lien}">${data.lien}</a>`;
             } else {
                 throw new Error(data.error || 'Erreur lors de la génération du token');
