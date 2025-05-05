@@ -4,8 +4,6 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-
-
 const tokenRouter = require('./routes/gentoken.js');
 
 const app = express();
