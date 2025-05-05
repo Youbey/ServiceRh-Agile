@@ -8,47 +8,46 @@ const tokenRouter = require('./routes/gentoken.js');
 
 const app = express();
 
-// Middleware pour parser les corps JSON
+// Configuration des middlewares
+app.use(logger('dev'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
-// Servir les fichiers statiques (comme index.html)
-app.use(express.static(path.join(__dirname)));
+// Servir les fichiers statiques depuis /public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Servir les fichiers HTML statiques depuis /views
+app.use('/views', express.static(path.join(__dirname, 'views')));
+
+// Route spécifique pour servir genToken.html à /gentoken
+app.get('/gentoken', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'genToken.html'));
+});
 
 // Monter le routeur pour l'API de génération de token
 app.use('/api/token', tokenRouter);
+
+// Catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
+});
+
+// Error handler
+app.use(function(err, req, res, next) {
+  // Set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // Render the error page (using a JSON response for simplicity)
+  res.status(err.status || 500);
+  res.json({ error: err.message });
+});
 
 // Démarrer le serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
-
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
 });
 
 module.exports = app;
