@@ -1,108 +1,168 @@
-/* Global Styles */
-body {
-  font-family: 'Arial', sans-serif;
+:root {
+  --primary-color: #2A5C7B;
+  --secondary-color: #4A90E2;
+  --accent-color: #00C9B1;
+  --background-light: #F8FAFC;
+  --text-dark: #1E293B;
+  --text-light: #FFFFFF;
+  --border-color: #E2E8F0;
+  --error-color: #EF4444;
+}
+
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f9;
-  color: #333;
-  text-align: center;
 }
 
-h1, h2 {
-  color: #0044cc;
-  margin-top: 20px;
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--background-light);
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-a {
-  color: #0044cc;
+header {
+  background: var(--primary-color);
+  color: var(--text-light);
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.header-nav a {
+  color: var(--text-light);
   text-decoration: none;
+  margin-left: 1.5rem;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
 }
 
-a:hover {
-  text-decoration: underline;
+.header-nav a:hover {
+  opacity: 0.9;
 }
 
-button {
-  background-color: #0044cc;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-button:hover {
-  background-color: #003399;
-}
-
-/* Form Styles */
-form {
-  background-color: white;
-  width: 300px;
-  margin: 50px auto;
-  padding-left: 20px;
-  padding-right: 38px;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-label {
-  display: block;
-  font-weight: bold;
-  margin: 10px 0 5px;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="password"] {
+.main-container {
   width: 100%;
-  padding: 8px 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 14px;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+  flex: 1;
 }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus {
-  border-color: #0044cc;
-  outline: none;
+.card {
+  background: var(--text-light);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+  margin-bottom: 2rem;
 }
 
-/* Pages Specific Styles */
-.container {
-  margin-top: 50px;
+.card-title {
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
-.quiz-container {
-  margin: 30px auto;
-  background-color: white;
-  width: 60%;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  background: var(--text-light);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-/* Footer */
-footer {
-  margin-top: 20px;
-  padding: 10px 0;
-  background-color: #333;
-  color: white;
-  font-size: 14px;
+.data-table th, 
+.data-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
 }
 
-footer a {
-  color: #ffffff;
+.data-table th {
+  background: var(--primary-color);
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.data-table tr:nth-child(even) {
+  background: var(--background-light);
+}
+
+.data-table tr:hover {
+  background: #F1F5F9;
+}
+
+.action-link {
+  color: var(--secondary-color);
   text-decoration: none;
+  margin-right: 1rem;
+  font-weight: 500;
 }
 
-footer a:hover {
+.action-link:hover {
   text-decoration: underline;
+}
+
+.action-link.delete {
+  color: var(--error-color);
+}
+
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+footer {
+  background: var(--primary-color);
+  color: var(--text-light);
+  padding: 1.5rem;
+  text-align: center;
+  margin-top: auto;
+}
+
+.footer-link {
+  color: var(--text-light);
+  text-decoration: none;
+  margin: 0 0.5rem;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .header-nav {
+    margin-top: 1rem;
+  }
+
+  .header-nav a {
+    margin: 0 0.75rem;
+  }
+
+  .data-table {
+    display: block;
+    overflow-x: auto;
+  }
 }

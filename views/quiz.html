@@ -1,14 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiz</title>
+  <title>Quiz RH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
-  <h1>Bienvenue au Quiz RH</h1>
-  <p>Bonne chance !</p>
-  <a href="/users/logout">Se déconnecter</a>
-</body>
-</html>
+  <header>
+    <div class="header-container">
+      <div class="header-title">Quiz RH</div>
+      <nav class="header-nav">
+        <a href="#">Accueil</a>
+        <a href="#">Quiz</a>
+        <a href="#">Résultats</a>
+        <a href="/users/logout">Déconnexion</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="card">
+      <h1 class="card-title">Gestion des Quiz</h1>
+      
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Titre</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td contenteditable="true">Quiz 1: Droit du Travail</td>
+            <td contenteditable="true">Testez vos connaissances sur la législation du travail</td>
+            <td>
+              <div class="button-group">
+                <a href="#" class="action-link">Modifier</a>
+                <a href="#" class="action-link delete">Supprimer</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td contenteditable="true">Quiz 2: Management & Leadership</td>
+            <td contenteditable="true">Évaluez vos compétences en gestion</td>
+            <td>
+              <div class="button-group">
+                <a href="#" class="action-link">Modifier</a>
+                <a href="#" class="action-link delete">Supprimer</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td contenteditable="true">Quiz 3: Recrutement</td>
+            <td contenteditable="true">Bonnes pratiques de recrutement</td>
+            <td>
+              <div class="button-group">
+                <a href="#" class="action-link">Modifier
