@@ -9,8 +9,16 @@ var session = require('express-session');
 var tokenRouter = require('./routes/gentoken.js');
 var usersRouter = require('./routes/users');
 var quizRouter = require('./routes/quiz');
+var quizzRouter = require('./routes/quizz');
+var cors = require('cors');
 
 var app = express();
+const corsOptions = {
+  origin: ['http://127.0.0.1:5500', 'http://localhost:5500'],
+  methods: ['GET', 'POST'],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -35,6 +43,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/token', tokenRouter);
 app.use('/users', usersRouter);
 app.use('/quiz', quizRouter);
+app.use('/api', quizzRouter);
 app.use("/", indexRouter);
 
 

@@ -27,7 +27,6 @@ async function generateToken(email) {
     const salt = "mySaltIsSecure";
     const data = email + salt;
     const hash = crypto.createHash('sha256').update(data).digest('hex');
-
     return hash;
 }
 
