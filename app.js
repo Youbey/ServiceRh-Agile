@@ -11,6 +11,7 @@ var usersRouter = require('./routes/users');
 var quizRouter = require('./routes/quiz');
 var quizCreateRouter = require('./routes/quiz_create');
 var quizListRouter = require('./routes/quiz_list');
+var quizModifyRouter = require('./routes/quiz_modify');
 
 var app = express();
 
@@ -41,7 +42,7 @@ app.use('/quiz_list', quizListRouter);
 app.use('/', quizCreateRouter);
 app.use('/quiz', quizRouter);
 app.use("/", indexRouter);
-
+app.use("/quiz_modify", quizModifyRouter);
 
 // Servir les fichiers HTML statiques depuis /views
 app.use('/views', express.static(path.join(__dirname, 'views')));

@@ -12,6 +12,7 @@ router.get('/', authenticate, (req, res) => {
 // Route pour ajouter un quiz, des questions et des réponses à la BDD
 router.post('/', authenticate, async (req, res) => {
     console.log("Données reçues :", req.body);
+
   const { title, description, time_limit } = req.body;
 
   if (!title || !description || !time_limit) {
@@ -66,5 +67,18 @@ router.delete('/quiz_delete/:id', authenticate, async (req, res) => {
     }
   });
   
+router.put('/quiz_modify/:id', authenticate, async (req, res) => {
+    const quizId = req.params.id;
+  
+    try {
+        await db.execute('UPDATE quizzes SET title = ?, description = ?, time_limit = ? WHERE id = ?', 
+            [title, description, time_limit, quizId]);
+
+      res.json({ message: "Quiz modifier avec succès !" });
+    } catch (error) {
+      console.error("Erreur modification du quiz :", error);
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  });
 
 module.exports = router;

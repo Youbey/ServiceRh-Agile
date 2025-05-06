@@ -82,7 +82,8 @@
         <tr>
           <td>${quiz.title}</td>
           <td>${quiz.description}</td>
-          <td><button onclick="deleteQuiz(${quiz.id})">Supprimer</button></td>
+          <td><button onclick="deleteQuiz(${quiz.id})">Supprimer</button>
+            <button onclick="modifyQuiz(${quiz.id})">Modifier</button></td>
         </tr>
       `).join('');
     }
@@ -125,37 +126,45 @@
     }
 
     document.getElementById('quizForm').addEventListener('submit', async function(event) {
-    event.preventDefault();
+  event.preventDefault();
+  
+  const formData = {
+    title: document.getElementById('title').value,
+    description: document.getElementById('description').value,
+    time_limit: document.getElementById('time_limit').value,
+    questions: [],
+    answers: [],
+    correct: []
+  };
 
-    const formData = {
-        title: document.getElementById('title').value,
-        description: document.getElementById('description').value,
-        time_limit: document.getElementById('time_limit').value,
-        questions: [],
-        answers: [],
-        correct: []
-    };
+    // Récupérer les questions et leurs réponses correctement
+    document.querySelectorAll("#questionsContainer > div").forEach((questionDiv, index) => {
+        const questionInput = questionDiv.querySelector("input[name='questions[]']");
+        if (questionInput) {
+        formData.questions.push(questionInput.value);
+        }
 
-    document.querySelectorAll("#questionsContainer input[name='questions[]']").forEach(input => {
-        formData.questions.push(input.value);
-    });
+        // Stocker les réponses pour chaque question sous le bon index
+        const answersArray = [];
+        const correctArray = [];
 
-    document.querySelectorAll("#questionsContainer div").forEach((questionDiv, index) => {
-        formData.answers[index] = [];
-        formData.correct[index] = [];
-        
         questionDiv.querySelectorAll("input[name^='answers']").forEach(answerInput => {
-        formData.answers[index].push(answerInput.value);
+        answersArray.push(answerInput.value);
         });
 
         questionDiv.querySelectorAll("input[name^='correct']").forEach(correctInput => {
-        formData.correct[index].push(correctInput.checked ? "on" : "off");
+        correctArray.push(correctInput.checked ? "on" : "off");
         });
+
+        formData.answers.push(answersArray);
+        formData.correct.push(correctArray);
     });
+
+    console.log("Données envoyées :", formData);
 
     const response = await fetch('/quiz_create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }, // Ajoute le bon format
+        headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify(formData)
     });
 
@@ -168,6 +177,46 @@
       await fetch(`/quiz_delete/${id}`, { method: 'DELETE' });
       loadQuizzes();
     }
+
+    async function modifyQuiz(id) {
+    const response = await fetch(`/quiz_modify/${id}`);
+    const quizData = await response.json();
+
+    document.getElementById("title").value = quizData.quiz.title;
+    document.getElementById("description").value = quizData.quiz.description;
+    document.getElementById("time_limit").value = quizData.quiz.time_limit;
+
+    const questionsContainer = document.getElementById("questionsContainer");
+    questionsContainer.innerHTML = ''; // Nettoyer l'affichage actuel
+
+    quizData.questions.forEach((question, index) => {
+      const questionDiv = document.createElement("div");
+      questionDiv.innerHTML = `
+        <label>Question ${index + 1} :</label>
+        <input type="text" name="questions[]" value="${question.text}" required>
+        
+        <h3>Réponses</h3>
+        <div id="answersContainer${index}"></div>
+        <button type="button" onclick="addAnswer(${index})">Ajouter une réponse</button>
+      `;
+      questionsContainer.appendChild(questionDiv);
+
+      const answersContainer = document.getElementById(`answersContainer${index}`);
+      quizData.answers.filter(a => a.question_id === question.id).forEach(answer => {
+        const answerDiv = document.createElement("div");
+        answerDiv.innerHTML = `
+          <label>Réponse :</label>
+          <input type="text" name="answers[${index}][]" value="${answer.text}" required>
+          <label>Correcte :</label>
+          <input type="checkbox" name="correct[${index}][]" ${answer.is_correct ? "checked" : ""}>
+        `;
+        answersContainer.appendChild(answerDiv);
+      });
+    });
+
+    document.getElementById("quizFormContainer").style.display = "block";
+  }
+
   </script>
 </body>
 </html>
