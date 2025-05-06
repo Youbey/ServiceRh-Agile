@@ -50,6 +50,11 @@ app.get('/quizz', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'quizz.html'));
 });
 
+// Route for results page
+app.get('/resultatsCandidats', function(req, res, next) {
+  res.sendFile(path.join(__dirname, 'views', 'resultatsCandidats.html'));
+});
+
 
 // Gestion des erreurs 404
 app.use((req, res, next) => {
