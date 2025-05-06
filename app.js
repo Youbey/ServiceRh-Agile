@@ -11,8 +11,17 @@ var usersRouter = require('./routes/users');
 var quizRouter = require('./routes/quiz');
 var quizCreateRouter = require('./routes/quiz_create');
 var quizListRouter = require('./routes/quiz_list');
+var quizzRouter = require('./routes/quizz');
+var cors = require('cors');
+
 
 var app = express();
+const corsOptions = {
+  origin: ['http://127.0.0.1:5500', 'http://localhost:5500'],
+  methods: ['GET', 'POST'],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -40,6 +49,7 @@ app.use('/quiz_create', quizCreateRouter);
 app.use('/quiz_list', quizListRouter);
 app.use('/', quizCreateRouter);
 app.use('/quiz', quizRouter);
+app.use('/api', quizzRouter);
 app.use("/", indexRouter);
 
 
