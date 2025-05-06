@@ -1,10 +1,8 @@
 function authenticate(req, res, next) {
-    if (req.session.isLoggedIn) {
-      next(); // Continuer vers la route suivante
-    } else {
-      res.redirect('/users/login'); // Redirige vers la page de connexion si non authentifié
-    }
+  if (req.session && req.session.isLoggedIn) {
+      return next(); // Continuer si l'utilisateur est authentifié
   }
-  
-  module.exports = authenticate;
-  
+  res.status(403).send('<h1>Accès interdit</h1><a href="/users/login">Se connecter</a>');
+}
+
+module.exports = authenticate;
