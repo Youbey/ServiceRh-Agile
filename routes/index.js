@@ -1,84 +1,125 @@
 var express = require('express');
 var router = express.Router();
 var path = require('path');
+const db = require('./../db');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.send('Welcome to Quiz System');
 });
 
-// Route for rh stats page
+// Route for rh stats page 
 router.get('/stats', function(req, res, next) {
   const rootDir = path.join(__dirname, '..');
   res.sendFile(path.join(rootDir, 'views', 'stats.html'));
 });
 
-// Mock data endpoint for stats
-router.get('/stats/data', function(req, res) {
-  // Mock data based on your database schema
-  const mockData = {
-    quizzes: [
-      { id: 1, title: "JavaScript Avancé", time_limit: 1800 },
-      { id: 2, title: "HTML/CSS Fondamentaux", time_limit: 1200 },
-      { id: 3, title: "Algorithms", time_limit: 1500 }
-    ],
-    candidates: [
-      {
-        id: 1,
-        mail: "candidat1@example.com",
-        quiz_id: 1,
-        quiz_title: "JavaScript Avancé",
-        score: "8/10",
-        percentage: 80,
-        time_spent: 765, // seconds
-        date: "2023-05-15T14:30:00Z",
-        attempt_id: 101
-      },
-      {
-        id: 2,
-        mail: "candidat2@example.com",
-        quiz_id: 1,
-        quiz_title: "JavaScript Avancé",
-        score: "6/10",
-        percentage: 60,
-        time_spent: 900,
-        date: "2023-05-16T10:15:00Z",
-        attempt_id: 102
-      },
-      {
-        id: 3,
-        mail: "candidat3@example.com",
-        quiz_id: 2,
-        quiz_title: "HTML/CSS Fondamentaux",
-        score: "9/10",
-        percentage: 90,
-        time_spent: 600,
-        date: "2023-05-17T16:45:00Z",
-        attempt_id: 103
-      },
-      {
-        id: 4,
-        mail: "candidat4@example.com",
-        quiz_id: 3,
-        quiz_title: "Algorithms",
-        score: "5/10",
-        percentage: 50,
-        time_spent: 1200,
-        date: "2023-05-18T09:20:00Z",
-        attempt_id: 104
-      }
-    ],
-    summary: {
-      total_candidates: 4,
-      avg_score: 70,
-      completion_rate: 100,
-      avg_time: 866
+// Real data endpoint for stats
+router.get('/stats/data', async function(req, res) {
+
+  // Promisify db.query to avoid callback hell
+        const query = (sql, params) => {
+            return new Promise((resolve, reject) => {
+                db.query(sql, params, (err, results) => {
+                    if (err) reject(err);
+                    else resolve(results);
+                });
+            });
+        };
+
+  try {
+    // Get all quizzes
+    const quizzes = await query(`
+      SELECT id, title, time_limit 
+      FROM quizzes
+      ORDER BY title
+    `);
+
+    // Get all candidate attempts with calculated scores
+    const candidates = await query(`
+      SELECT 
+        u.id AS id,
+        u.mail AS mail,
+        ca.quiz_id AS quiz_id,
+        q.title AS quiz_title,
+        ca.score AS raw_score,
+        (SELECT SUM(points) FROM questions WHERE quiz_id = ca.quiz_id) AS total_points,
+        ca.start_time AS date,
+        TIMESTAMPDIFF(SECOND, ca.start_time, ca.end_time) AS time_spent,
+        ca.id AS attempt_id
+      FROM candidate_attempts ca
+      JOIN users u ON ca.user_id = u.id
+      JOIN quizzes q ON ca.quiz_id = q.id
+      WHERE ca.status = 'completed'
+      ORDER BY ca.start_time DESC
+    `);
+
+    // Process candidates data to calculate percentages
+    const processedCandidates = candidates.map(candidate => {
+      const score = candidate.raw_score || 0;
+      console.log(candidate.mail + " : " + score)
+      const totalPoints = candidate.total_points || 1; // Avoid division by zero
+      const percentage = Math.round((score / totalPoints) * 100);
+      
+      return {
+        id: candidate.id,
+        mail: candidate.mail,
+        quiz_id: candidate.quiz_id,
+        quiz_title: candidate.quiz_title,
+        score: `${score}/${totalPoints}`,
+        percentage: percentage,
+        time_spent: candidate.time_spent,
+        date: candidate.date,
+        attempt_id: candidate.attempt_id
+      };
+    });
+
+    // Calculate summary statistics
+    const totalCandidates = processedCandidates.length;
+    
+    let avgScore = 0;
+    if (totalCandidates > 0) {
+      avgScore = Math.round(
+        processedCandidates.reduce((sum, candidate) => sum + candidate.percentage, 0) / totalCandidates
+      );
     }
-  };
 
-  res.json(mockData);
+    // Get completion rate (completed attempts vs total attempts)
+    const attemptsCount = await query(`
+      SELECT 
+        COUNT(*) AS total_attempts,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_attempts
+      FROM candidate_attempts
+    `);
+    
+    const completionRate = attemptsCount[0].total_attempts > 0 
+      ? Math.round((attemptsCount[0].completed_attempts / attemptsCount[0].total_attempts) * 100)
+      : 0;
+
+    // Calculate average time
+    let avgTime = 0;
+    if (totalCandidates > 0) {
+      avgTime = Math.round(
+        processedCandidates.reduce((sum, candidate) => sum + candidate.time_spent, 0) / totalCandidates
+      );
+    }
+
+    // Return the formatted data
+    res.json({
+      quizzes: quizzes,
+      candidates: processedCandidates,
+      summary: {
+        total_candidates: totalCandidates,
+        avg_score: avgScore,
+        completion_rate: completionRate,
+        avg_time: avgTime
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching stats data:', error);
+    res.status(500).json({ error: 'Error fetching statistics data' });
+  }
 });
-
 
 // Route for results page
 router.get('/resultats', function(req, res, next) {
@@ -86,174 +127,213 @@ router.get('/resultats', function(req, res, next) {
   res.sendFile(path.join(rootDir, 'views', 'resultats.html'));
 });
 
+
 // API endpoint to serve the results data
-router.get('/resultats/data', function(req, res, next) {
-  // In a real application, you would fetch this data from the database
-  // For now, we'll return static mock data
-  
-  const mockResultData = {
-    quizTitle: "JavaScript Avancé",
-    userId: 123,
-    attemptId: 456,
-    correctAnswers: 8,
-    totalQuestions: 10,
-    percentage: 80,
-    totalTimeSpent: 765, // seconds
-    questions: [
-      {
-        id: 1,
-        text: "Quelle méthode est utilisée pour ajouter un élément à la fin d'un tableau en JavaScript?",
-        order: 1,
-        points: 10,
-        timeSpent: 45, // seconds
-        isCorrect: true,
-        selectedAnswerId: 3,
-        answers: [
-          { id: 1, text: "array.add()", isCorrect: false },
-          { id: 2, text: "array.insert()", isCorrect: false },
-          { id: 3, text: "array.push()", isCorrect: true },
-          { id: 4, text: "array.append()", isCorrect: false }
-        ]
-      },
-      {
-        id: 2,
-        text: "Comment déclarer une constante en JavaScript?",
-        order: 2,
-        points: 10,
-        timeSpent: 32,
-        isCorrect: true,
-        selectedAnswerId: 7,
-        answers: [
-          { id: 5, text: "var x = 5;", isCorrect: false },
-          { id: 6, text: "let x = 5;", isCorrect: false },
-          { id: 7, text: "const x = 5;", isCorrect: true },
-          { id: 8, text: "constant x = 5;", isCorrect: false }
-        ]
-      },
-      {
-        id: 3,
-        text: "Quel est le résultat de '2' + 2 en JavaScript?",
-        order: 3,
-        points: 10,
-        timeSpent: 60,
-        isCorrect: true,
-        selectedAnswerId: 9,
-        answers: [
-          { id: 9, text: "'22'", isCorrect: true },
-          { id: 10, text: "4", isCorrect: false },
-          { id: 11, text: "NaN", isCorrect: false },
-          { id: 12, text: "Error", isCorrect: false }
-        ]
-      },
-      {
-        id: 4,
-        text: "Quelle méthode est utilisée pour sélectionner un élément par son ID en JavaScript?",
-        order: 4,
-        points: 10,
-        timeSpent: 28,
-        isCorrect: true,
-        selectedAnswerId: 14,
-        answers: [
-          { id: 13, text: "document.findElement()", isCorrect: false },
-          { id: 14, text: "document.getElementById()", isCorrect: true },
-          { id: 15, text: "document.querySelector()", isCorrect: false },
-          { id: 16, text: "document.getElement()", isCorrect: false }
-        ]
-      },
-      {
-        id: 5,
-        text: "Comment créer une fonction en JavaScript?",
-        order: 5,
-        points: 10,
-        timeSpent: 40,
-        isCorrect: true,
-        selectedAnswerId: 17,
-        answers: [
-          { id: 17, text: "function maFonction() {}", isCorrect: true },
-          { id: 18, text: "def maFonction() {}", isCorrect: false },
-          { id: 19, text: "create maFonction() {}", isCorrect: false },
-          { id: 20, text: "new Function() {}", isCorrect: false }
-        ]
-      },
-      {
-        id: 6,
-        text: "Comment vérifier si une variable est un tableau en JavaScript?",
-        order: 6,
-        points: 10,
-        timeSpent: 55,
-        isCorrect: true,
-        selectedAnswerId: 24,
-        answers: [
-          { id: 21, text: "typeof variable === 'array'", isCorrect: false },
-          { id: 22, text: "variable instanceof Array", isCorrect: false },
-          { id: 23, text: "variable.isArray()", isCorrect: false },
-          { id: 24, text: "Array.isArray(variable)", isCorrect: true }
-        ]
-      },
-      {
-        id: 7,
-        text: "Quelle méthode convertit un objet JavaScript en chaîne JSON?",
-        order: 7,
-        points: 10,
-        timeSpent: 47,
-        isCorrect: true,
-        selectedAnswerId: 25,
-        answers: [
-          { id: 25, text: "JSON.stringify()", isCorrect: true },
-          { id: 26, text: "JSON.parse()", isCorrect: false },
-          { id: 27, text: "JSON.toString()", isCorrect: false },
-          { id: 28, text: "JSON.convert()", isCorrect: false }
-        ]
-      },
-      {
-        id: 8,
-        text: "Comment accéder au premier élément d'un tableau en JavaScript?",
-        order: 8,
-        points: 10,
-        timeSpent: 33,
-        isCorrect: true,
-        selectedAnswerId: 29,
-        answers: [
-          { id: 29, text: "array[0]", isCorrect: true },
-          { id: 30, text: "array(1)", isCorrect: false },
-          { id: 31, text: "array.first()", isCorrect: false },
-          { id: 32, text: "array.get(0)", isCorrect: false }
-        ]
-      },
-      {
-        id: 9,
-        text: "Quel opérateur est utilisé pour la comparaison stricte en JavaScript?",
-        order: 9,
-        points: 10,
-        timeSpent: 37,
-        isCorrect: false,
-        selectedAnswerId: 34,
-        answers: [
-          { id: 33, text: "==", isCorrect: false },
-          { id: 34, text: "=", isCorrect: false },
-          { id: 35, text: "===", isCorrect: true },
-          { id: 36, text: "!==", isCorrect: false }
-        ]
-      },
-      {
-        id: 10,
-        text: "Comment déclarer une classe en JavaScript moderne?",
-        order: 10,
-        points: 10,
-        timeSpent: 68,
-        isCorrect: false,
-        selectedAnswerId: 39,
-        answers: [
-          { id: 37, text: "class MaClasse {}", isCorrect: true },
-          { id: 38, text: "function MaClasse() {}", isCorrect: false },
-          { id: 39, text: "new Class MaClasse {}", isCorrect: false },
-          { id: 40, text: "create MaClasse {}", isCorrect: false }
-        ]
-      }
-    ]
-  };
-  
-  res.json(mockResultData);
+router.get('/resultats/data', async function(req, res, next) {
+    try {
+        const user_id = req.query.user_id;
+        
+        // Validate input parameters
+        if (!user_id) {
+            return res.status(400).json({ error: 'Missing required parameters' });
+        }
+
+        // Promisify db.query to avoid callback hell
+        const query = (sql, params) => {
+            return new Promise((resolve, reject) => {
+                db.query(sql, params, (err, results) => {
+                    if (err) reject(err);
+                    else resolve(results);
+                });
+            });
+        };
+
+        // 1. Get user information
+        const userResults = await query(`SELECT * FROM users WHERE id = ?`, [user_id]);
+        
+        if (userResults.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        const user = userResults[0];
+
+        // 2. Get the most recent attempt
+        const attemptResults = await query(`
+            SELECT ca.*, q.title as quiz_title, q.description as quiz_description, q.time_limit 
+            FROM candidate_attempts ca
+            JOIN quizzes q ON ca.quiz_id = q.id
+            WHERE ca.user_id = ?
+            ORDER BY ca.start_time DESC
+            LIMIT 1
+        `, [user.id]);
+        
+        if (attemptResults.length === 0) {
+            return res.status(404).json({ error: 'No quiz attempts found for this user' });
+        }
+        
+        const attempt = attemptResults[0];
+
+        // 3. Get questions for this quiz
+        const questionsResults = await query(`
+            SELECT 
+                q.id as question_id,
+                q.text as question_text,
+                q.order as question_order,
+                q.points as question_points
+            FROM questions q
+            WHERE q.quiz_id = ?
+            ORDER BY q.order
+        `, [attempt.quiz_id]);
+
+        // 4. Get answers for all questions
+        const answersResults = await query(`
+            SELECT 
+                a.id as answer_id,
+                a.question_id,
+                a.text as answer_text,
+                a.is_correct
+            FROM answers a
+            JOIN questions q ON a.question_id = q.id
+            WHERE q.quiz_id = ?
+        `, [attempt.quiz_id]);
+
+        // 5. Get responses for this attempt
+        const responsesResults = await query(`
+            SELECT 
+                cr.question_id,
+                cr.answer_id,
+                cr.time_spent
+            FROM candidate_responses cr
+            WHERE cr.attempt_id = ?
+        `, [attempt.id]);
+
+        // Process the data
+        
+        // Map answers to their questions
+        const answersMap = {};
+        answersResults.forEach(answer => {
+            if (!answersMap[answer.question_id]) {
+                answersMap[answer.question_id] = [];
+            }
+            answersMap[answer.question_id].push({
+                id: answer.answer_id,
+                text: answer.answer_text,
+                isCorrect: answer.is_correct === 1
+            });
+        });
+        
+        // Map responses to their questions
+        const responsesMap = {};
+        responsesResults.forEach(response => {
+            responsesMap[response.question_id] = {
+                answerId: response.answer_id,
+                timeSpent: response.time_spent
+            };
+        });
+        
+        // Process all questions with their answers and user responses
+        const processedResponses = [];
+        let totalTimeSpent = 0;
+        let correctCount = 0;
+        
+        questionsResults.forEach(question => {
+            const questionId = question.question_id;
+            const userResponse = responsesMap[questionId] || { answerId: null, timeSpent: 0 };
+            
+            // Get all answers for this question
+            const answers = answersMap[questionId] || [];
+            
+            // Find the selected answer object and correct answer object
+            const selectedAnswer = answers.find(a => a.id === userResponse.answerId) || { 
+                id: null, 
+                text: 'Aucune réponse sélectionnée', 
+                isCorrect: false 
+            };
+            
+            const correctAnswer = answers.find(a => a.isCorrect) || { 
+                id: null, 
+                text: 'Réponse correcte non disponible', 
+                isCorrect: true 
+            };
+            
+            // Check if the answer is correct
+            const isCorrect = selectedAnswer.isCorrect;
+            
+            // Add to correct count if correct
+            if (isCorrect) {
+                correctCount++;
+            }
+            
+            // Add to total time spent
+            totalTimeSpent += userResponse.timeSpent;
+            
+            // Create response object
+            processedResponses.push({
+                question: {
+                    id: questionId,
+                    text: question.question_text,
+                    order: question.question_order,
+                    points: question.question_points
+                },
+                selectedAnswer: {
+                    id: selectedAnswer.id,
+                    text: selectedAnswer.text
+                },
+                correctAnswer: {
+                    id: correctAnswer.id,
+                    text: correctAnswer.text
+                },
+                allAnswers: answers,
+                isCorrect: isCorrect,
+                timeSpent: userResponse.timeSpent
+            });
+        });
+        
+        // Sort responses by question order
+        processedResponses.sort((a, b) => a.question.order - b.question.order);
+        
+        // Calculate percentage
+        const totalQuestions = questionsResults.length;
+        const percentageScore = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+        
+        // Create the final result object
+        const result = {
+            user: {
+                id: user.id,
+                mail: user.mail
+            },
+            quiz: {
+                id: attempt.quiz_id,
+                title: attempt.quiz_title,
+                description: attempt.quiz_description,
+                timeLimit: attempt.time_limit
+            },
+            attempt: {
+                id: attempt.id,
+                startTime: attempt.start_time,
+                endTime: attempt.end_time,
+                status: attempt.status,
+                score: attempt.score || percentageScore,
+                timeSpent: totalTimeSpent
+            },
+            summary: {
+                totalQuestions: totalQuestions,
+                correctAnswers: correctCount,
+                percentage: percentageScore
+            },
+            responses: processedResponses
+        };
+        
+        // Send the final response
+        res.json(result);
+        
+    } catch (error) {
+        console.error('Error in /data endpoint:', error);
+        res.status(500).json({ 
+            error: 'Server error', 
+            message: error.message 
+        });
+    }
 });
 
 module.exports = router;

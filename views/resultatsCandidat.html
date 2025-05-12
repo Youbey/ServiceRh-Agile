@@ -291,9 +291,27 @@
     document.getElementById('quiz-title').textContent = data.quiz.title;
 
     // Update summary information
-    document.getElementById('total-score').textContent = `${data.summary.correctAnswers}/${data.summary.totalQuestions}`;
+    document.getElementById('total-score').textContent = `${data.attempt.score}`;
     document.getElementById('percentage').textContent = `${data.summary.percentage}%`;
-    document.getElementById('total-time').textContent = formatTime(data.attempt.timeSpent);
+
+    // Format total time
+    const startTime = new Date(data.attempt.startTime);
+    const endTime = new Date(data.attempt.endTime);
+
+    // Calculate the time difference in milliseconds
+    const timeDifference = endTime - startTime;
+
+    // Convert milliseconds to total seconds
+    const totalSeconds = Math.floor(timeDifference / 1000);
+
+    // Calculate minutes and seconds
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    // Format as min:sec
+    const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    document.getElementById('total-time').textContent = formattedTime;
 
     // Update progress bar
     const progressBar = document.getElementById('progress-bar');

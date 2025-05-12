@@ -1,305 +1,421 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Résultats du Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #2A5C7B;
-            --secondary-color: #4A90E2;
-            --accent-color: #00C9B1;
-            --background-light: #F8FAFC;
-            --text-dark: #1E293B;
-            --text-light: #FFFFFF;
-            --border-color: #E2E8F0;
-            --correct-color: #D4EDDA;
-            --correct-text: #155724;
-            --incorrect-color: #F8D7DA;
-            --incorrect-text: #721C24;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Résultats du Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2A5C7B;
+      --secondary-color: #4A90E2;
+      --accent-color: #00C9B1;
+      --background-light: #F8FAFC;
+      --text-dark: #1E293B;
+      --text-light: #FFFFFF;
+      --border-color: #E2E8F0;
+      --correct-color: #D4EDDA;
+      --correct-text: #155724;
+      --incorrect-color: #F8D7DA;
+      --incorrect-text: #721C24;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--background-light);
-            color: var(--text-dark);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 0;
-        }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--background-light);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 0;
+    }
 
-        .assessment-container {
-            background: var(--text-light);
-            width: 100%;
-            max-width: 800px;
-            margin: 1rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-        }
+    .assessment-container {
+      background: var(--text-light);
+      width: 100%;
+      max-width: 800px;
+      margin: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
 
-        .assessment-header {
-            background: var(--primary-color);
-            color: var(--text-light);
-            padding: 1.5rem 2rem;
-        }
+    .assessment-header {
+      background: var(--primary-color);
+      color: var(--text-light);
+      padding: 1.5rem 2rem;
+    }
 
-        .assessment-header h1 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
+    .assessment-header h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
 
-        .assessment-header p {
-            opacity: 0.9;
-            font-size: 1rem;
-        }
+    .assessment-header p {
+      opacity: 0.9;
+      font-size: 1rem;
+    }
 
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            padding: 2rem;
-            border-bottom: 1px solid var(--border-color);
-        }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem;
+      border-bottom: 1px solid var(--border-color);
+    }
 
-        .metric-card {
-            background: var(--background-light);
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-        }
+    .metric-card {
+      background: var(--background-light);
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+    }
 
-        .metric-value {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--accent-color);
-            margin-bottom: 0.5rem;
-        }
+    .metric-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      margin-bottom: 0.5rem;
+    }
 
-        .metric-label {
-            font-size: 0.9rem;
-            color: var(--text-dark);
-            opacity: 0.8;
-        }
+    .metric-label {
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      opacity: 0.8;
+    }
 
-        .progress-container {
-            height: 4px;
-            background: var(--border-color);
-            margin: 0 2rem;
-        }
+    .progress-container {
+      height: 4px;
+      background: var(--border-color);
+      margin: 0 2rem;
+    }
 
-        .progress-bar {
-            height: 100%;
-            background: var(--accent-color);
-            transition: width 0.4s ease;
-        }
+    .progress-bar {
+      height: 100%;
+      background: var(--accent-color);
+      transition: width 0.4s ease;
+    }
 
-        .questions-container {
-            padding: 2rem;
-        }
+    .questions-container {
+      padding: 2rem;
+    }
 
-        .question {
-            margin-bottom: 1.5rem;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: var(--background-light);
-        }
+    .question {
+      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--background-light);
+    }
 
-        .question-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
 
-        .question-number {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
+    .question-number {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
 
-        .question-time {
-            color: #64748B;
-            font-size: 0.9rem;
-        }
+    .question-time {
+      color: #64748B;
+      font-size: 0.9rem;
+    }
 
-        .question-text {
-            font-size: 1.1rem;
-            line-height: 1.5;
-            margin-bottom: 1.5rem;
-        }
+    .question-text {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
 
-        .answers-container {
-            display: grid;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
+    .answers-container {
+      display: grid;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
 
-        .answer {
-            padding: 1rem;
-            border-radius: 6px;
-            background: var(--text-light);
-            border-left: 4px solid var(--border-color);
-        }
+    .answer {
+      padding: 1rem;
+      border-radius: 6px;
+      background: var(--text-light);
+      border-left: 4px solid var(--border-color);
+    }
 
-        .selected-answer {
-            border-left-color: var(--secondary-color);
-            background: rgba(74, 144, 226, 0.05);
-        }
+    .selected-answer {
+      border-left-color: var(--secondary-color);
+      background: rgba(74, 144, 226, 0.05);
+    }
 
-        .correct-answer {
-            border-left-color: var(--accent-color);
-            background: rgba(0, 201, 177, 0.05);
-        }
+    .correct-answer {
+      border-left-color: var(--accent-color);
+      background: rgba(0, 201, 177, 0.05);
+    }
 
-        .question-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .question-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        .question-result {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
+    .question-result {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
 
-        .correct {
-            background-color: var(--correct-color);
-            color: var(--correct-text);
-        }
+    .correct {
+      background-color: var(--correct-color);
+      color: var(--correct-text);
+    }
 
-        .incorrect {
-            background-color: var(--incorrect-color);
-            color: var(--incorrect-text);
-        }
+    .incorrect {
+      background-color: var(--incorrect-color);
+      color: var(--incorrect-text);
+    }
 
-        .question-points {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
+    .question-points {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
 
-        @media (max-width: 640px) {
-            .assessment-container {
-                margin: 0;
-                border-radius: 0;
-            }
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      font-size: 1.2rem;
+      color: var(--primary-color);
+    }
 
-            .metrics-grid {
-                grid-template-columns: 1fr;
-                padding: 1.5rem;
-            }
+    .error-message {
+      text-align: center;
+      padding: 2rem;
+      color: var(--incorrect-text);
+      background: var(--incorrect-color);
+      border-radius: 8px;
+      margin: 2rem;
+    }
 
-            .questions-container {
-                padding: 1.5rem;
-            }
-        }
-    </style>
+    @media (max-width: 640px) {
+      .assessment-container {
+        margin: 0;
+        border-radius: 0;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr;
+        padding: 1.5rem;
+      }
+
+      .questions-container {
+        padding: 1.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="assessment-container">
-        <div class="assessment-header">
-            <h1>Résultats du Quiz</h1>
-            <p>Voici vos résultats pour le quiz <strong id="quiz-title">JavaScript Avancé</strong></p>
-        </div>
+<div class="assessment-container">
+  <div class="assessment-header">
+    <h1>Résultats du Quiz</h1>
+    <p>Voici vos résultats pour le quiz <strong id="quiz-title">Chargement...</strong></p>
+  </div>
 
-        <div class="metrics-grid">
-            <div class="metric-card">
-                <div class="metric-value" id="total-score">8/10</div>
-                <div class="metric-label">Score</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value" id="percentage">80%</div>
-                <div class="metric-label">Pourcentage</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value" id="total-time">12:45</div>
-                <div class="metric-label">Temps Total</div>
-            </div>
-        </div>
-
-        <div class="progress-container">
-            <div class="progress-bar" id="progress-bar" style="width: 80%"></div>
-        </div>
-
-        <div class="questions-container" id="questions-container">
-            <!-- Questions will be inserted here dynamically -->
-        </div>
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-value" id="total-score">-/-</div>
+      <div class="metric-label">Score</div>
     </div>
+    <div class="metric-card">
+      <div class="metric-value" id="percentage">-%</div>
+      <div class="metric-label">Pourcentage</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value" id="total-time">--:--</div>
+      <div class="metric-label">Temps Total</div>
+    </div>
+  </div>
 
-    <script>
-        // Fetch data from the API
-        fetch('/resultats/data')
-            .then(response => response.json())
-            .then(data => {
-                // Update the header with quiz info
-                document.getElementById('quiz-title').textContent = data.quizTitle;
-                
-                // Update summary information
-                document.getElementById('total-score').textContent = `${data.correctAnswers}/${data.totalQuestions}`;
-                document.getElementById('percentage').textContent = `${data.percentage}%`;
-                document.getElementById('total-time').textContent = formatTime(data.totalTimeSpent);
-                
-                // Update progress bar
-                const progressBar = document.getElementById('progress-bar');
-                progressBar.style.width = `${data.percentage}%`;
-                
-                // Generate question results
-                const questionsContainer = document.getElementById('questions-container');
-                data.questions.forEach((question, index) => {
-                    const questionElement = document.createElement('div');
-                    questionElement.className = 'question';
-                    
-                    const resultClass = question.isCorrect ? 'correct' : 'incorrect';
-                    const resultText = question.isCorrect ? 'Correct' : 'Incorrect';
-                    
-                    questionElement.innerHTML = `
-                        <div class="question-header">
-                            <span class="question-number">Question ${index + 1}</span>
-                            <span class="question-time">Temps: ${formatTime(question.timeSpent)}</span>
-                        </div>
-                        <div class="question-text">${question.text}</div>
-                        <div class="answers-container">
-                            ${question.answers.map(answer => {
-                                let classes = 'answer';
-                                if (answer.id === question.selectedAnswerId) {
-                                    classes += ' selected-answer';
-                                }
-                                if (answer.isCorrect) {
-                                    classes += ' correct-answer';
-                                }
-                                return `<div class="${classes}">${answer.text}</div>`;
-                            }).join('')}
-                        </div>
-                        <div class="question-footer">
-                            <span class="question-result ${resultClass}">${resultText}</span>
-                            <span class="question-points">Points: ${question.isCorrect ? question.points : 0}/${question.points}</span>
-                        </div>
-                    `;
-                    
-                    questionsContainer.appendChild(questionElement);
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching results:', error);
-                document.getElementById('questions-container').innerHTML = '<p>Erreur lors du chargement des résultats.</p>';
-            });
-            
-        // Helper function to format time in mm:ss
-        function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = seconds % 60;
-            return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  <div class="progress-container">
+    <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+  </div>
+
+  <div class="questions-container" id="questions-container">
+    <div class="loading">Chargement des résultats...</div>
+  </div>
+</div>
+
+<script>
+  // Get URL parameters
+  function getUrlParameter(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  }
+
+  // Parse the token from URL
+  const user_id = getUrlParameter('user_id');
+
+  // Fetch data from the API
+  function fetchQuizResults(user_id) {
+    if (!user_id) {
+      showError("Paramètre user_id manquant. Veuillez vérifier l'URL.");
+      return;
+    }
+
+    fetch(`/resultats/data?user_id=${user_id}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
         }
-    </script>
+        return response.json();
+      })
+      .then(data => {
+        renderResults(data);
+      })
+      .catch(error => {
+        console.error('Error fetching results:', error);
+        showError("Erreur lors du chargement des résultats. Veuillez réessayer plus tard.");
+      });
+  }
+
+  // Render the results to the page
+  function renderResults(data) {
+    // Update the header with quiz info
+    document.getElementById('quiz-title').textContent = data.quiz.title;
+
+    // Update summary information
+    document.getElementById('total-score').textContent = `${data.attempt.score}`;
+    document.getElementById('percentage').textContent = `${data.summary.percentage}%`;
+
+    // Format total time
+    const startTime = new Date(data.attempt.startTime);
+    const endTime = new Date(data.attempt.endTime);
+
+    // Calculate the time difference in milliseconds
+    const timeDifference = endTime - startTime;
+
+    // Convert milliseconds to total seconds
+    const totalSeconds = Math.floor(timeDifference / 1000);
+
+    // Calculate minutes and seconds
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    // Format as min:sec
+    const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    document.getElementById('total-time').textContent = formattedTime;
+
+    // Update progress bar
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.style.width = `${data.summary.percentage}%`;
+
+    // Generate question results
+    const questionsContainer = document.getElementById('questions-container');
+    questionsContainer.innerHTML = ''; // Clear loading message
+
+    data.responses.forEach((response, index) => {
+      const questionElement = document.createElement('div');
+      questionElement.className = 'question';
+
+      const resultClass = response.isCorrect ? 'correct' : 'incorrect';
+      const resultText = response.isCorrect ? 'Correct' : 'Incorrect';
+
+      // Create answers HTML for all possible answers
+      let answersHTML = '';
+      
+      // If we have all answers available
+      if (response.allAnswers && response.allAnswers.length > 0) {
+        response.allAnswers.forEach(answer => {
+          let classes = 'answer';
+          let indicator = '';
+          
+          // Mark if this is the selected answer
+          if (answer.id === response.selectedAnswer.id) {
+            classes += ' selected-answer';
+            indicator = ' (Votre réponse)';
+          }
+          
+          // Mark if this is the correct answer
+          if (answer.isCorrect) {
+            classes += ' correct-answer';
+            // Only add the indicator if it's not already marked as the user's answer
+            if (answer.id !== response.selectedAnswer.id) {
+              indicator = ' (Réponse correcte)';
+            } else if (response.isCorrect) {
+              indicator = ' (Votre réponse - Correcte)';
+            }
+          }
+          
+          answersHTML += `
+            <div class="${classes}">
+              ${answer.text}${indicator}
+            </div>
+          `;
+        });
+      } else {
+        // Fallback if we don't have all answers - just show selected and correct
+        if (response.isCorrect) {
+          answersHTML = `
+            <div class="answer selected-answer correct-answer">
+              ${response.selectedAnswer.text} (Votre réponse - Correcte)
+            </div>
+          `;
+        } else {
+          answersHTML = `
+            <div class="answer selected-answer">
+              ${response.selectedAnswer.text} (Votre réponse)
+            </div>
+            <div class="answer correct-answer">
+              ${response.correctAnswer.text} (Réponse correcte)
+            </div>
+          `;
+        }
+      }
+
+      questionElement.innerHTML = `
+        <div class="question-header">
+          <span class="question-number">Question ${index + 1}</span>
+          <span class="question-time">Temps: ${formatTime(response.timeSpent)}</span>
+        </div>
+        <div class="question-text">${response.question.text}</div>
+        <div class="answers-container">
+          ${answersHTML}
+        </div>
+        <div class="question-footer">
+          <span class="question-result ${resultClass}">${resultText}</span>
+          <span class="question-points">Points: ${response.isCorrect ? response.question.points : 0}/${response.question.points}</span>
+        </div>
+      `;
+
+      questionsContainer.appendChild(questionElement);
+    });
+  }
+
+  // Helper function to format time in mm:ss
+  function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  }
+
+  // Show error message
+  function showError(message) {
+    const questionsContainer = document.getElementById('questions-container');
+    questionsContainer.innerHTML = `<div class="error-message">${message}</div>`;
+  }
+
+  // Start fetching results when the page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    fetchQuizResults(user_id);
+  });
+</script>
 </body>
 </html>
