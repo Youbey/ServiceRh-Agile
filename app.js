@@ -9,6 +9,7 @@ var session = require('express-session');
 var tokenRouter = require('./routes/gentoken.js');
 var usersRouter = require('./routes/users');
 var quizRouter = require('./routes/quiz');
+var resultatsCandidat = require('./routes/resultatsCandidat');
 
 var app = express();
 
@@ -35,6 +36,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/token', tokenRouter);
 app.use('/users', usersRouter);
 app.use('/quiz', quizRouter);
+app.use('/resultatsCandidat', resultatsCandidat);
 app.use("/", indexRouter);
 
 
@@ -50,10 +52,6 @@ app.get('/quizz', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'quizz.html'));
 });
 
-// Route for results page
-app.get('/resultatsCandidats', function(req, res, next) {
-  res.sendFile(path.join(__dirname, 'views', 'resultatsCandidats.html'));
-});
 
 
 // Gestion des erreurs 404
