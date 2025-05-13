@@ -1,6 +1,6 @@
 # Service RH - Système de Connexion et Gestion des Quiz
 
-Ce projet est une application web simple pour le service RH d'une entreprise de cybersécurité. Il permet de :
+Ce projet est une application web pour le service RH d'une entreprise de cybersécurité. Il permet de :
 - Gérer un système de connexion sécurisé pour le personnel RH.
 - Permettre aux RH de naviguer vers un quiz.
 - Offrir une base pour l'intégration des fonctionnalités comme la gestion des données des candidats et des quiz.
@@ -11,6 +11,7 @@ Ce projet est une application web simple pour le service RH d'une entreprise de 
 - [Structure du Projet](#structure-du-projet)
 - [Fonctionnalités](#fonctionnalités)
 - [Utilisation](#utilisation)
+- [Structure de la Base De Données](#structure-de-la-base-de-données)
 - [Améliorations Futures](#améliorations-futures)
 - [Contribution](#contribution)
 - [Licence](#licence)
@@ -133,6 +134,22 @@ mdp: Password123!
 ### Suivi des Résultats
 1. Consultez les résultats individuels via "resultatsCandidat.html"
 2. Analysez les statistiques globales via "stats.html"
+
+### Structure de la base de données
+
+![Diagramme de la base de données](docs/database_diagram.png)
+
+Le système utilise une base de données MySQL avec la structure suivante :
+
+- **rh** : Stocke les informations d'authentification des utilisateurs RH
+- **users** : Contient les données des candidats (email, token, résultats)
+- **quizzes** : Définit les quiz disponibles dans le système
+- **questions** : Stocke les questions associées à chaque quiz
+- **answers** : Contient les réponses possibles pour chaque question
+- **candidate_attempts** : Enregistre les tentatives des candidats
+- **candidate_responses** : Stocke les réponses données par les candidats
+
+Pour initialiser la base de données, utilisez le script SQL disponible dans `docs/Script_Bdd.sql`.
 
 ## Améliorations Futures
 - Implémentation d'une authentification plus robuste avec JWT
