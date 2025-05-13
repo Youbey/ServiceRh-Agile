@@ -66,16 +66,17 @@
             margin: 1.5rem 0;
         }
 
-        .token-input {
+        .token-input, .quiz-select {
             width: 100%;
             padding: 0.875rem;
             border: 2px solid #cbd5e1;
             border-radius: 8px;
             font-size: 1rem;
             font-family: "Inter", sans-serif;
+            margin-bottom: 1rem;
         }
 
-        .token-input:focus {
+        .token-input:focus, .quiz-select:focus {
             outline: none;
             border-color: var(--secondary-color);
         }
@@ -128,6 +129,9 @@
     </div>
     <div class="content">
         <div class="input-container">
+            <select id="quizSelect" class="quiz-select" required>
+                <option value="" disabled selected>Chargement des quiz...</option>
+            </select>
             <input
                     type="email"
                     id="emailInput"
@@ -145,8 +149,45 @@
 </div>
 
 <script>
+    // Charger les quiz au démarrage de la page
+    async function loadQuizzes() {
+        const quizSelect = document.getElementById("quizSelect");
+        const errorDiv = document.getElementById("error");
+
+        try {
+            const response = await fetch('/api/token/quizzes', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Vider le menu déroulant
+                quizSelect.innerHTML = '<option value="" disabled selected>Sélectionnez un quiz</option>';
+
+                // Ajouter chaque quiz au menu déroulant
+                data.quizzes.forEach(quiz => {
+                    const option = document.createElement('option');
+                    option.value = quiz.id;
+                    option.textContent = quiz.name;
+                    quizSelect.appendChild(option);
+                });
+            } else {
+                throw new Error(data.error || 'Erreur lors du chargement des quiz');
+            }
+        } catch (error) {
+            errorDiv.textContent = `Erreur : ${error.message}`;
+            quizSelect.innerHTML = '<option value="" disabled selected>Erreur de chargement</option>';
+        }
+    }
+
+    // Générer un token
     async function handleGenerateToken() {
         const emailInput = document.getElementById("emailInput").value;
+        const quizSelect = document.getElementById("quizSelect").value;
         const resultDiv = document.getElementById("result");
         const errorDiv = document.getElementById("error");
 
@@ -154,13 +195,18 @@
         resultDiv.textContent = "";
         errorDiv.textContent = "";
 
+        if (!quizSelect) {
+            errorDiv.textContent = "Erreur : Veuillez sélectionner un quiz.";
+            return;
+        }
+
         try {
             const response = await fetch('/api/token/generate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email: emailInput }),
+                body: JSON.stringify({ email: emailInput, quizId: quizSelect }),
             });
 
             const data = await response.json();
@@ -174,6 +220,9 @@
             errorDiv.textContent = `Erreur : ${error.message}`;
         }
     }
+
+    // Charger les quiz au chargement de la page
+    window.onload = loadQuizzes;
 </script>
 </body>
 </html>
