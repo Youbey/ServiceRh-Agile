@@ -260,16 +260,16 @@
   }
 
   // Parse the token from URL
-  const user_id = getUrlParameter('user_id');
+  const token = getUrlParameter('token');
 
   // Fetch data from the API
-  function fetchQuizResults(user_id) {
-    if (!user_id) {
-      showError("Paramètre user_id manquant. Veuillez vérifier l'URL.");
+  function fetchQuizResults(token) {
+    if (!token) {
+      showError("Paramètre token manquant. Veuillez vérifier l'URL.");
       return;
     }
 
-    fetch(`/resultats/data?user_id=${user_id}`)
+    fetch(`/resultatsCandidat/data?token=${token}`)
       .then(response => {
         if (!response.ok) {
           throw new Error(`Erreur HTTP: ${response.status}`);
@@ -414,7 +414,7 @@
 
   // Start fetching results when the page loads
   document.addEventListener('DOMContentLoaded', function() {
-    fetchQuizResults(user_id);
+    fetchQuizResults(token);
   });
 </script>
 </body>

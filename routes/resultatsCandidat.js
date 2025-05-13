@@ -3,138 +3,20 @@ var router = express.Router();
 var path = require('path');
 const db = require('./../db');
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.send('Welcome to Quiz System');
-});
-
-// Route for rh stats page 
-router.get('/stats', function(req, res, next) {
-  const rootDir = path.join(__dirname, '..');
-  res.sendFile(path.join(rootDir, 'views', 'stats.html'));
-});
-
-// Real data endpoint for stats
-router.get('/stats/data', async function(req, res) {
-
-  // Promisify db.query to avoid callback hell
-        const query = (sql, params) => {
-            return new Promise((resolve, reject) => {
-                db.query(sql, params, (err, results) => {
-                    if (err) reject(err);
-                    else resolve(results);
-                });
-            });
-        };
-
-  try {
-    // Get all quizzes
-    const quizzes = await query(`
-      SELECT id, title, time_limit 
-      FROM quizzes
-      ORDER BY title
-    `);
-
-    // Get all candidate attempts with calculated scores
-    const candidates = await query(`
-      SELECT 
-        u.id AS id,
-        u.mail AS mail,
-        ca.quiz_id AS quiz_id,
-        q.title AS quiz_title,
-        ca.score AS raw_score,
-        (SELECT SUM(points) FROM questions WHERE quiz_id = ca.quiz_id) AS total_points,
-        ca.start_time AS date,
-        TIMESTAMPDIFF(SECOND, ca.start_time, ca.end_time) AS time_spent,
-        ca.id AS attempt_id
-      FROM candidate_attempts ca
-      JOIN users u ON ca.user_id = u.id
-      JOIN quizzes q ON ca.quiz_id = q.id
-      WHERE ca.status = 'completed'
-      ORDER BY ca.start_time DESC
-    `);
-
-    // Process candidates data to calculate percentages
-    const processedCandidates = candidates.map(candidate => {
-      const score = candidate.raw_score || 0;
-      console.log(candidate.mail + " : " + score)
-      const totalPoints = candidate.total_points || 1; // Avoid division by zero
-      const percentage = Math.round((score / totalPoints) * 100);
-      
-      return {
-        id: candidate.id,
-        mail: candidate.mail,
-        quiz_id: candidate.quiz_id,
-        quiz_title: candidate.quiz_title,
-        score: `${score}/${totalPoints}`,
-        percentage: percentage,
-        time_spent: candidate.time_spent,
-        date: candidate.date,
-        attempt_id: candidate.attempt_id
-      };
-    });
-
-    // Calculate summary statistics
-    const totalCandidates = processedCandidates.length;
-    
-    let avgScore = 0;
-    if (totalCandidates > 0) {
-      avgScore = Math.round(
-        processedCandidates.reduce((sum, candidate) => sum + candidate.percentage, 0) / totalCandidates
-      );
-    }
-
-    // Get completion rate (completed attempts vs total attempts)
-    const attemptsCount = await query(`
-      SELECT 
-        COUNT(*) AS total_attempts,
-        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_attempts
-      FROM candidate_attempts
-    `);
-    
-    const completionRate = attemptsCount[0].total_attempts > 0 
-      ? Math.round((attemptsCount[0].completed_attempts / attemptsCount[0].total_attempts) * 100)
-      : 0;
-
-    // Calculate average time
-    let avgTime = 0;
-    if (totalCandidates > 0) {
-      avgTime = Math.round(
-        processedCandidates.reduce((sum, candidate) => sum + candidate.time_spent, 0) / totalCandidates
-      );
-    }
-
-    // Return the formatted data
-    res.json({
-      quizzes: quizzes,
-      candidates: processedCandidates,
-      summary: {
-        total_candidates: totalCandidates,
-        avg_score: avgScore,
-        completion_rate: completionRate,
-        avg_time: avgTime
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching stats data:', error);
-    res.status(500).json({ error: 'Error fetching statistics data' });
-  }
-});
-
 // Route for results page
-router.get('/resultats', function(req, res, next) {
+router.get('/', function(req, res, next) {
   const rootDir = path.join(__dirname, '..');
-  res.sendFile(path.join(rootDir, 'views', 'resultats.html'));
+  res.sendFile(path.join(rootDir, 'views', 'resultatsCandidat.html'));
 });
-
 
 // API endpoint to serve the results data
-router.get('/resultats/data', async function(req, res, next) {
+router.get('/data', async function(req, res, next) {
     try {
-        const user_id = req.query.user_id;
+        const token = req.query.token;
+        console.log('Token:', token);
         
         // Validate input parameters
-        if (!user_id) {
+        if (!token) {
             return res.status(400).json({ error: 'Missing required parameters' });
         }
 
@@ -149,7 +31,7 @@ router.get('/resultats/data', async function(req, res, next) {
         };
 
         // 1. Get user information
-        const userResults = await query(`SELECT * FROM users WHERE id = ?`, [user_id]);
+        const userResults = await query(`SELECT * FROM users WHERE token = ?`, [token]);
         
         if (userResults.length === 0) {
             return res.status(404).json({ error: 'User not found' });
@@ -335,5 +217,7 @@ router.get('/resultats/data', async function(req, res, next) {
         });
     }
 });
+
+
 
 module.exports = router;
