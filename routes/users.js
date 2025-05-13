@@ -1,5 +1,7 @@
 const express = require('express');
-const path = require('path'); // Add this line to fix the error
+const path = require('path');
+const db = require('../db');
+const bcrypt = require('bcrypt');
 const router = express.Router();
 
 // Route to display the login form
@@ -8,15 +10,31 @@ router.get('/login', (req, res) => {
 });
 
 // Route to handle login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  // Hardcoded credentials for simplicity
-  if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+  try {
+    const [rows] = await db.execute('SELECT * FROM rh WHERE mail = ?', [email]);
+
+    if (rows.length == 0) {
+      return res.send.status(401).send('<h1>Mail ou Password not found</h1><br><a href="/users/login">Retry</a>');
+    }
+
+    const user = rows[0];
+
+    //Check Password
+    const passwordMatch = await bcrypt.compare(password, user.password_hash);
+    if (!passwordMatch){
+      return res.send.status(401).send('<h1>Mail ou Password not found</h1><br><a href="/users/login">Retry</a>');
+    }
+
     req.session.isLoggedIn = true;
-    res.redirect('/quiz'); // Redirect to quiz page after successful login
-  } else {
-    res.status(401).send('<h1>Invalid credentials</h1><a href="/users/login">Try again</a>');
+    req.session.userId = user.id;
+
+    res.redirect('/quiz');
+  } catch (error) {
+    console.error('Erreur lors de la connexion :', error);
+    res.status(500).send('<h1>Erreur serveur</h1><a href="/users/login">Réessayer</a>');
   }
 });
 
