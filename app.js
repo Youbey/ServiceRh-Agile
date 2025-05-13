@@ -9,11 +9,11 @@ var session = require('express-session');
 var tokenRouter = require('./routes/gentoken.js');
 var usersRouter = require('./routes/users');
 var quizRouter = require('./routes/quiz');
+var resultatsCandidat = require('./routes/resultatsCandidat');
 var quizCreateRouter = require('./routes/quiz_create');
 var quizListRouter = require('./routes/quiz_list');
 var quizzRouter = require('./routes/quizz');
 var cors = require('cors');
-
 
 var app = express();
 const corsOptions = {
@@ -47,8 +47,9 @@ app.use('/api/token', tokenRouter);
 app.use('/users', usersRouter);
 app.use('/quiz_create', quizCreateRouter);
 app.use('/quiz_list', quizListRouter);
-app.use('/', quizCreateRouter);
+app.use('/create', quizCreateRouter);
 app.use('/quiz', quizRouter);
+app.use('/resultatsCandidat', resultatsCandidat);
 app.use('/api', quizzRouter);
 app.use("/", indexRouter);
 
@@ -64,6 +65,7 @@ app.get('/gentoken', (req, res) => {
 app.get('/quizz', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'quizz.html'));
 });
+
 
 // Gestion des erreurs 404
 app.use((req, res, next) => {
