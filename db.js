@@ -2,8 +2,8 @@ const mysql = require('mysql2/promise');
 
 const pool = mysql.createPool({
     host: 'localhost',
-    user: 'dev',
-    password: 'dev',
+    user: 'root',
+    password: 'rootpassword',
     database: 'quiz_system',
     charset: 'utf8mb4',
     waitForConnections: true,
