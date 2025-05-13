@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord RH - Statistiques des candidats</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/stylesheets/style.css">
     <style>
         :root {
             --primary-color: #2A5C7B;
@@ -16,6 +17,9 @@
             --border-color: #E2E8F0;
             --correct-color: #D4EDDA;
             --incorrect-color: #F8D7DA;
+        }
+        header{
+            margin-bottom: 2rem;
         }
 
         * {
@@ -29,7 +33,6 @@
             background: var(--background-light);
             color: var(--text-dark);
             min-height: 100vh;
-            padding: 2rem;
         }
 
         .dashboard-container {
@@ -197,6 +200,18 @@
     </style>
 </head>
 <body>
+    <header>
+    <div class="header-container">
+      <div class="header-title">Quiz RH</div>
+      <nav class="header-nav">
+        <a href="/quiz">Accueil</a>
+        <a href="/quiz_create">Quiz</a>
+        <a href="/stats">Résultats</a>
+        <a href="/genToken">Token</a>
+        <a href="/users/logout">Déconnexion</a>
+      </nav>
+    </div>
+  </header>
     <div class="dashboard-container">
         <div class="header">
             <h1>Statistiques des candidats</h1>

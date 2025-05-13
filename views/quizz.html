@@ -245,6 +245,11 @@
         margin-bottom: 0.5rem;
       }
 
+      .navigation-controls{
+        display: flex;
+        justify-content: space-between;
+      }
+
       @media (max-width: 640px) {
         .assessment-container {
           margin: 0;
@@ -399,7 +404,7 @@
             <div class="metric-label">Correct Answers</div>
           </div>
         </div>
-
+      <div class="navigation-controls">
         <button class="nav-button" onclick="location.reload()">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -417,9 +422,14 @@
           </svg>
           Restart Assessment
         </button>
+        <button class="nav-button" onclick="seeResults()"">
+          Voir résultat
+        </button>
+      </div>
       </div>
     </div>
     <script>
+      
       let questionTimerInterval = null;
 
       let user = null;
@@ -449,6 +459,10 @@
           document.getElementById("token-modal").style.display = "flex";
         }
       });
+
+      function seeResults() {
+        window.location.href = `/resultatsCandidat?token=${token}`;
+      }
 
       function authenticateWithToken(token) {
         fetch(`http://localhost:3000/api/user-from-token/${token}`)

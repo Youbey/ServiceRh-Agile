@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var path = require('path');
-const db = require('./../db');
+const db = require('./../db2');
 
 // Route for results page
 router.get('/', function(req, res, next) {

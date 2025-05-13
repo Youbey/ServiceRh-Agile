@@ -8,54 +8,112 @@
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
-  <header>
-    <div class="header-container">
-      <div class="header-title">Quiz RH</div>
-      <nav class="header-nav">
-        <a href="/quiz">Accueil</a>
-        <a href="/quiz_create">Quiz</a>
-        <a href="/stats">Résultats</a>
-        <a href="/users/logout">Déconnexion</a>
-      </nav>
-    </div>
-  </header>
+<header>
+  <div class="header-container">
+    <div class="header-title">Quiz RH</div>
+    <nav class="header-nav">
+      <a href="/quiz">Accueil</a>
+      <a href="/quiz_create">Quiz</a>
+      <a href="/stats">Résultats</a>
+      <a href="/genToken">Token</a>
+      <a href="/users/logout">Déconnexion</a>
+    </nav>
+  </div>
+</header>
 
-  <main class="main-container">
-    <div class="card">
-      <h1 class="card-title">Gestion des Quiz</h1>
-      
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Titre</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td contenteditable="true">Quiz 1: Droit du Travail</td>
-            <td contenteditable="true">Testez vos connaissances sur la législation du travail</td>
+<main class="main-container">
+  <div class="card">
+    <h1 class="card-title">Gestion des Quiz</h1>
+
+    <table class="data-table">
+      <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Description</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody id="quiz-table-body">
+      <!-- Les données seront insérées dynamiquement ici -->
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+  async function loadQuizzes() {
+    try {
+      const response = await fetch('/quiz/data', { // Adjust if not under /quizzes
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erreur lors de la récupération des données: ${response.status}`);
+      }
+
+      const { data } = await response.json();
+      console.log('Quiz data:', data);
+
+      const tableBody = document.getElementById('quiz-table-body');
+      if (!tableBody) {
+        console.error('Table body element not found! Check HTML for id="quiz-table-body"');
+        alert('Erreur: Tableau non trouvé dans la page.');
+        return;
+      }
+
+      tableBody.innerHTML = '';
+
+      data.forEach(quiz => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td contenteditable="true">${quiz.title}</td>
+            <td contenteditable="true">${quiz.description}</td>
             <td>
               <div class="button-group">
-                <a href="#" class="action-link">Modifier</a>
-                <a href="#" class="action-link delete">Supprimer</a>
+                <a href="/quiz/quiz_edit/${quiz.id}" class="action-link">Modifier</a>
+                <a href="/quiz/quiz/${quiz.id}" class="action-link delete" onclick="deleteQuiz(${quiz.id}, event)">Supprimer</a>
               </div>
             </td>
-          </tr>
-          <tr>
-            <td contenteditable="true">Quiz 2: Management & Leadership</td>
-            <td contenteditable="true">Évaluez vos compétences en gestion</td>
-            <td>
-              <div class="button-group">
-                <a href="#" class="action-link">Modifier</a>
-                <a href="#" class="action-link delete">Supprimer</a>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td contenteditable="true">Quiz 3: Recrutement</td>
-            <td contenteditable="true">Bonnes pratiques de recrutement</td>
-            <td>
-              <div class="button-group">
-                <a href="#" class="action-link">Modifier
+          `;
+        tableBody.appendChild(row);
+      });
+    } catch (error) {
+      console.error('Erreur dans loadQuizzes:', error);
+      alert('Impossible de charger les quizzes: ' + error.message);
+    }
+  }
+
+  async function deleteQuiz(quizId, event) {
+    event.preventDefault();
+    if (!confirm('Voulez-vous vraiment supprimer ce quiz ?')) return;
+
+    try {
+      const response = await fetch(`/quiz/${quizId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la suppression du quiz');
+      }
+
+      alert('Quiz supprimé avec succès');
+      loadQuizzes();
+    } catch (error) {
+      console.error('Erreur:', error);
+      alert('Impossible de supprimer le quiz.');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded, running loadQuizzes');
+    loadQuizzes();
+  });
+</script>
+  </body>
+  </html>

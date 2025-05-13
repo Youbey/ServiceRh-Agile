@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Éditer le quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2a5c7b;
+            --secondary-color: #4a90e2;
+            --accent-color: #00c9b1;
+            --background-light: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-nav a {
+            color: var(--text-light);
+            margin-left: 1rem;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .header-nav a:hover {
+            text-decoration: underline;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: var(--text-light);
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table th {
+            background-color: var(--background-light);
+            font-weight: 600;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .action-link {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .action-link.delete {
+            color: #ef4444;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: #1e3a57;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        .question {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .answer {
+            margin-left: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .error {
+            color: #ef4444;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        label {
+            font-weight: 500;
+            margin-top: 0.5rem;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="header-title">Quiz RH</div>
+      <nav class="header-nav">
+        <a href="/quiz">Accueil</a>
+        <a href="/quiz_create">Quiz</a>
+        <a href="/stats">Résultats</a>
+        <a href="/users/logout">Déconnexion</a>
+      </nav>
+    </div>
+  </header>
+
+    <div class="main-container">
+        <div class="card">
+            <h2 class="card-title">Éditer : <%= quiz.title || 'Quiz' %></h2>
+            <p class="error" id="error-message" style="display: none;"></p>
+
+            <form id="quiz-edit-form">
+                <!-- Quiz Details -->
+                <input type="hidden" name="quizId" value="<%= quiz.id %>">
+                <label for="title">Titre</label>
+                <input type="text" id="title" name="title" value="<%= quiz.title || '' %>" required>
+
+                <label for="description">Description</label>
+                <textarea id="description" name="description"><%= quiz.description || '' %></textarea>
+
+                <label for="time_limit">Temps limite (secondes)</label>
+                <input type="number" id="time_limit" name="time_limit" value="<%= quiz.time_limit || '' %>" min="0">
+
+                <!-- Questions -->
+                <h3>Questions</h3>
+                <% (questions || []).forEach((question, qIndex) => { %>
+                    <div class="question">
+                        <label for="question_<%= qIndex %>_text">Question <%= question.order %></label>
+                        <input type="text" id="question_<%= qIndex %>_text" name="questions[<%= qIndex %>][text]" value="<%= question.text || '' %>" required>
+
+                        <label for="question_<%= qIndex %>_points">Points</label>
+                        <input type="number" id="question_<%= qIndex %>_points" name="questions[<%= qIndex %>][points]" value="<%= question.points || 0 %>" min="0" required>
+
+                        <input type="hidden" name="questions[<%= qIndex %>][id]" value="<%= question.id || '' %>">
+                        <input type="hidden" name="questions[<%= qIndex %>][order]" value="<%= question.order || qIndex + 1 %>">
+
+                        <!-- Answers -->
+                        <h4>Réponses</h4>
+                        <% (question.answers || []).forEach((answer, aIndex) => { %>
+                            <div class="answer">
+                                <input type="text" name="questions[<%= qIndex %>][answers][<%= aIndex %>][text]" value="<%= answer.text || '' %>" required>
+                                <label>
+                                    <input type="checkbox" name="questions[<%= qIndex %>][answers][<%= aIndex %>][is_correct]" <%= answer.is_correct ? 'checked' : '' %>>
+                                    Correcte
+                                </label>
+                                <input type="hidden" name="questions[<%= qIndex %>][answers][<%= aIndex %>][id]" value="<%= answer.id || '' %>">
+                            </div>
+                        <% }) %>
+                    </div>
+                <% }) %>
+
+                <button type="submit">Sauvegarder</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('quiz-edit-form').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.style.display = 'none'; // Hide error message initially
+
+            const formData = new FormData(event.target);
+            const data = {};
+            formData.forEach((value, key) => {
+                if (!data[key]) {
+                    data[key] = value;
+                } else {
+                    if (!Array.isArray(data[key])) {
+                        data[key] = [data[key]];
+                    }
+                    data[key].push(value);
+                }
+            });
+
+            // Structure the data as expected by the API
+            const payload = {
+                quizId: data.quizId,
+                title: data.title,
+                description: data.description || '',
+                time_limit: data.time_limit || null,
+                questions: []
+            };
+
+            // Process questions and answers
+            if (data.questions) {
+                Object.keys(data.questions).forEach((qIndex) => {
+                    const question = data.questions[qIndex];
+                    const answers = [];
+                    if (question.answers) {
+                        Object.keys(question.answers).forEach((aIndex) => {
+                            const answer = question.answers[aIndex];
+                            answers.push({
+                                id: answer.id,
+                                text: answer.text,
+                                is_correct: formData.get(`questions[${qIndex}][answers][${aIndex}][is_correct]`) === 'on'
+                            });
+                        });
+                    }
+                    payload.questions.push({
+                        id: question.id,
+                        text: question.text,
+                        points: parseInt(question.points, 10),
+                        order: parseInt(question.order, 10),
+                        answers
+                    });
+                });
+            }
+
+            try {
+                const response = await fetch('/quizzes/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    // Redirect to the edit page on success
+                    window.location.href = `/quiz_edit/${data.quizId}`;
+                } else {
+                    // Display error message
+                    errorMessage.textContent = result.error || 'Erreur lors de la mise à jour';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Erreur lors de la requête:', error);
+                errorMessage.textContent = 'Erreur réseau ou serveur';
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

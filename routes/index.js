@@ -1,11 +1,12 @@
 var express = require('express');
 var router = express.Router();
 var path = require('path');
-const db = require('./../db');
+const db = require('./../db2');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.send('Welcome to Quiz System');
+  const rootDir = path.join(__dirname, '..');
+  res.sendFile(path.join(rootDir, 'views', 'login.html'));
 });
 
 // Route for rh stats page 
