@@ -3,29 +3,29 @@ const router = express.Router();
 const crypto = require('crypto');
 const db = require('./../db');
 
-async function generateToken(email) {
+async function generateToken(email, quizId) {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         throw new Error('Adresse e-mail invalide');
     }
 
-    // Récupérer l'email et la date de création
-    const [results] = await db.query('SELECT mail, creation_date FROM users WHERE mail = ?', [email]);
+    // Récupérer l'email, la date de création et le quizId
+    const [results] = await db.query('SELECT mail, creation_date, quizzID FROM users WHERE mail = ?', [email]);
 
     // Vérifier si l'email existe
     if (results.length > 0) {
         const creationDate = new Date(results[0].creation_date);
         const currentYear = new Date().getFullYear();
+        const existingQuizId = results[0].quizzID;
 
         // Vérifier si le compte a été créé pendant l'année en cours
         if (creationDate.getFullYear() === currentYear) {
-            throw new Error('Ce compte a été créé cette année, impossible de générer un nouveau token');
-        } else {
-            throw new Error('Cet e-mail existe déjà');
+            if (existingQuizId === quizId)
+                throw new Error('Ce compte a déja participer à ce quizz cette année.');
         }
     }
 
     const salt = "mySaltIsSecure";
-    const data = email + salt;
+    const data = email + salt + quizId; // Inclure quizId dans le hash
     const hash = crypto.createHash('sha256').update(data).digest('hex');
     return hash;
 }
@@ -56,7 +56,7 @@ router.post('/generate', async (req, res) => {
     const { email, quizId } = req.body;
 
     try {
-        const token = await generateToken(email);
+        const token = await generateToken(email, quizId);
         await addToken(token, email, quizId);
         const lien = "http://localhost:3000/quizz?token=" + token;
         res.status(200).json({ token, lien });
@@ -64,6 +64,7 @@ router.post('/generate', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
 router.get('/quizzes', async (req, res) => {
     try {
         const query = 'SELECT id, title FROM quizzes';
