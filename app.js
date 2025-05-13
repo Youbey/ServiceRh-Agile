@@ -9,8 +9,19 @@ var session = require('express-session');
 var tokenRouter = require('./routes/gentoken.js');
 var usersRouter = require('./routes/users');
 var quizRouter = require('./routes/quiz');
+var resultatsCandidat = require('./routes/resultatsCandidat');
+var quizCreateRouter = require('./routes/quiz_create');
+var quizListRouter = require('./routes/quiz_list');
+var quizzRouter = require('./routes/quizz');
+var cors = require('cors');
 
 var app = express();
+const corsOptions = {
+  origin: ['http://127.0.0.1:5500', 'http://localhost:5500'],
+  methods: ['GET', 'POST'],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -27,14 +38,19 @@ app.use(session({
 
 // Configuration des middlewares
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Définir les routes
 app.use('/api/token', tokenRouter);
 app.use('/users', usersRouter);
+app.use('/quiz_create', quizCreateRouter);
+app.use('/quiz_list', quizListRouter);
+app.use('/create', quizCreateRouter);
 app.use('/quiz', quizRouter);
+app.use('/resultatsCandidat', resultatsCandidat);
+app.use('/api', quizzRouter);
 app.use("/", indexRouter);
 
 

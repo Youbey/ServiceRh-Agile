@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des Quiz</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <style>
+    button {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="header-title">Gestion des Quiz</div>
+      <nav class="header-nav">
+        <a href="/quiz">Accueil</a>
+        <a href="/stats">Résultats</a>
+        <a href="/users/logout">Déconnexion</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="card">
+      <h1 class="card-title">Liste des Quiz</h1>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Titre</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="quizList">
+          <!-- Les quiz seront ajoutés ici dynamiquement -->
+        </tbody>
+      </table>
+      <button id="showQuizForm">Créer un nouveau quiz</button>
+    </div>
+
+    <div class="card" id="quizFormContainer" style="display: none;">
+      <h1 class="card-title">Créer un Nouveau Quiz</h1>
+      <form id="quizForm">
+        <label for="title">Titre :</label>
+        <input type="text" id="title" name="title">
+
+        <label for="description">Description :</label>
+        <textarea id="description" name="description"></textarea>
+
+        <label for="time_limit">Temps limite (minutes) :</label>
+        <input type="number" id="time_limit" name="time_limit" min="1">
+
+        <h2>Questions</h2>
+        <div id="questionsContainer"></div>
+        <button type="button" onclick="addQuestion()">Ajouter une question</button>
+
+        <button type="submit">Créer Quiz</button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // Afficher la liste des quiz
+    async function loadQuizzes() {
+      const response = await fetch('/quiz_list');
+      const quizzes = await response.json();
+      const quizList = document.getElementById("quizList");
+
+      quizList.innerHTML = quizzes.map(quiz => `
+        <tr>
+          <td>${quiz.title}</td>
+          <td>${quiz.description}</td>
+          <td><button onclick="deleteQuiz(${quiz.id})">Supprimer</button></td>
+        </tr>
+      `).join('');
+    }
+
+    document.addEventListener("DOMContentLoaded", loadQuizzes);
+
+    // Affichage du formulaire de création
+    document.getElementById("showQuizForm").addEventListener("click", function() {
+      document.getElementById("quizFormContainer").style.display = "block";
+    });
+
+    function addQuestion() {
+      const container = document.getElementById("questionsContainer");
+      const questionIndex = container.children.length + 1;
+      
+      const questionDiv = document.createElement("div");
+      questionDiv.innerHTML = `
+        <label>Question ${questionIndex} :</label>
+        <input type="text" name="questions[]">
+        
+        <h3>Réponses</h3>
+        <div id="answersContainer${questionIndex}"></div>
+        <button type="button" onclick="addAnswer(${questionIndex})">Ajouter une réponse</button>
+      `;
+      container.appendChild(questionDiv);
+    }
+
+    function addAnswer(questionIndex) {
+      const container = document.getElementById(`answersContainer${questionIndex}`);
+      const answerIndex = container.children.length + 1;
+
+      const answerDiv = document.createElement("div");
+      answerDiv.innerHTML = `
+        <label>Réponse ${answerIndex} :</label>
+        <input type="text" name="answers[${questionIndex}][]">
+        <label>Correcte :</label>
+        <input type="checkbox" name="correct[${questionIndex}][]">
+      `;
+      container.appendChild(answerDiv);
+    }
+
+    document.getElementById('quizForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const formData = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        time_limit: document.getElementById('time_limit').value,
+        questions: [],
+        answers: [],
+        correct: []
+    };
+
+    document.querySelectorAll("#questionsContainer input[name='questions[]']").forEach(input => {
+        formData.questions.push(input.value);
+    });
+
+    document.querySelectorAll("#questionsContainer div").forEach((questionDiv, index) => {
+        formData.answers[index] = [];
+        formData.correct[index] = [];
+        
+        questionDiv.querySelectorAll("input[name^='answers']").forEach(answerInput => {
+        formData.answers[index].push(answerInput.value);
+        });
+
+        questionDiv.querySelectorAll("input[name^='correct']").forEach(correctInput => {
+        formData.correct[index].push(correctInput.checked ? "on" : "off");
+        });
+    });
+
+    const response = await fetch('/quiz_create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, // Ajoute le bon format
+        body: JSON.stringify(formData)
+    });
+
+    const result = await response.json();
+    alert(result.message);
+    loadQuizzes();
+    });
+
+    async function deleteQuiz(id) {
+      await fetch(`/quiz_delete/${id}`, { method: 'DELETE' });
+      loadQuizzes();
+    }
+  </script>
+</body>
+</html>

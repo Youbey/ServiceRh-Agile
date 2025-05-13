@@ -3,45 +3,43 @@ const router = express.Router();
 const crypto = require('crypto');
 const db = require('./../db');
 
-async function generateToken(email) {
+async function generateToken(email, quizId) {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         throw new Error('Adresse e-mail invalide');
     }
 
-    // Récupérer l'email et la date de création
-    const [results] = await db.query('SELECT mail, creation_date FROM users WHERE mail = ?', [email]);
+    // Récupérer l'email, la date de création et le quizId
+    const [results] = await db.query('SELECT mail, creation_date, quizzID FROM users WHERE mail = ?', [email]);
 
     // Vérifier si l'email existe
     if (results.length > 0) {
         const creationDate = new Date(results[0].creation_date);
         const currentYear = new Date().getFullYear();
+        const existingQuizId = results[0].quizzID;
 
         // Vérifier si le compte a été créé pendant l'année en cours
         if (creationDate.getFullYear() === currentYear) {
-            throw new Error('Ce compte a été créé cette année, impossible de générer un nouveau token');
-        } else {
-            throw new Error('Cet e-mail existe déjà');
+            if (existingQuizId === quizId)
+                throw new Error('Ce compte a déja participer à ce quizz cette année.');
         }
     }
 
     const salt = "mySaltIsSecure";
-    const data = email + salt;
+    const data = email + salt + quizId; // Inclure quizId dans le hash
     const hash = crypto.createHash('sha256').update(data).digest('hex');
-
     return hash;
 }
 
-async function addToken(token, email) {
+async function addToken(token, email, quizId) {
     try {
         // Valider les paramètres
-        if (!token || !email) {
-            throw new Error('Token ou email manquant');
+        if (!token || !email || !quizId) {
+            throw new Error('Token ou email ou quizId manquant');
         }
 
-
         // Insérer dans la base de données avec le timestamp actuel
-        const query = 'INSERT INTO users (mail, token, creation_date) VALUES (?, ?, NOW())';
-        const [result] = await db.query(query, [email, token]);
+        const query = 'INSERT INTO users (mail, token, quizzID, creation_date) VALUES (?, ?, ?, NOW())';
+        const [result] = await db.query(query, [email, token, quizId]);
 
         // Vérifier si l'insertion a réussi
         if (result.affectedRows === 0) {
@@ -55,11 +53,11 @@ async function addToken(token, email) {
 }
 
 router.post('/generate', async (req, res) => {
-    const { email } = req.body;
+    const { email, quizId } = req.body;
 
     try {
-        const token = await generateToken(email);
-        await addToken(token, email);
+        const token = await generateToken(email, quizId);
+        await addToken(token, email, quizId);
         const lien = "http://localhost:3000/quizz?token=" + token;
         res.status(200).json({ token, lien });
     } catch (error) {
@@ -67,4 +65,25 @@ router.post('/generate', async (req, res) => {
     }
 });
 
+router.get('/quizzes', async (req, res) => {
+    try {
+        const query = 'SELECT id, title FROM quizzes';
+        const [result] = await db.query(query);
+
+        if (!result || result.length === 0) {
+            return res.status(404).json({ error: 'Aucun quiz trouvé' });
+        }
+
+        // Transformer title en name
+        const quizzes = result.map(quiz => ({
+            id: quiz.id,
+            name: quiz.title
+        }));
+
+        res.status(200).json({ quizzes });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des quiz:', error);
+        res.status(500).json({ error: 'Erreur serveur lors de la récupération des quiz' });
+    }
+});
 module.exports = router;
